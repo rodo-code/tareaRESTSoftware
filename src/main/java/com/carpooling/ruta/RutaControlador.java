@@ -2,8 +2,11 @@ package com.carpooling.ruta;
 
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,8 +33,11 @@ public class RutaControlador {
     }
 
     @PostMapping("/rutas")
-    Ruta nuevaRuta(@RequestBody Ruta nuevo){
-        return repositorioRuta.save(nuevo);
+    ResponseEntity<?> nuevaRuta(@RequestBody Ruta nuevo) throws URISyntaxException {
+        Resource<Ruta> resource = ensambladorResourceRuta.toResource(repositorioRuta.save(nuevo));
+        return ResponseEntity
+                .created(new URI(resource.getId().expand().getHref()))
+                .body(resource);
     }
 
     @GetMapping("/rutas/{id}")
