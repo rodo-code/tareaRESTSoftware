@@ -14,23 +14,20 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 public class RutaControlador {
 
     private final RepositorioRuta repositorioRuta;
-    RutaControlador(RepositorioRuta repositorioRuta){
+    private final EnsambladorResourceRuta ensambladorResourceRuta;
+    RutaControlador(RepositorioRuta repositorioRuta, EnsambladorResourceRuta ensambladorResourceRuta){
         this.repositorioRuta = repositorioRuta;
+        this.ensambladorResourceRuta = ensambladorResourceRuta;
     }
 
     @GetMapping("/rutas")
     Resources<Resource<Ruta>> todo(){
         List<Resource<Ruta>> rutas = repositorioRuta.findAll().stream()
-                .map( ruta -> new Resource<>(ruta,
-                        linkTo(methodOn(RutaControlador.class).uno(ruta.getId())).withSelfRel(),
-                        linkTo(methodOn(RutaControlador.class).todo()).withRel("rutas")))
+                .map(ensambladorResourceRuta::toResource)
                 .collect(Collectors.toList());
         return  new Resources<>(rutas,
                 linkTo(methodOn(RutaControlador.class).todo()).withSelfRel());
     }
-    /*List<Ruta> todo(){
-        return repositorioRuta.findAll();
-    }*/
 
     @PostMapping("/rutas")
     Ruta nuevaRuta(@RequestBody Ruta nuevo){
@@ -40,9 +37,7 @@ public class RutaControlador {
     @GetMapping("/rutas/{id}")
     Resource<Ruta> uno(@PathVariable Long id){
         Ruta ruta = repositorioRuta.findById(id).orElseThrow(()-> new ExcepcionRutaNoEncontrada(id));
-        return new Resource<>(ruta,
-                linkTo(methodOn(RutaControlador.class).uno(id)).withSelfRel(),
-                linkTo(methodOn(RutaControlador.class).todo()).withRel("rutas"));
+        return ensambladorResourceRuta.toResource(ruta);
     }
 
     @PutMapping("/rutas/{id}")
