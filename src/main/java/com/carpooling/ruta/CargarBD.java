@@ -10,7 +10,12 @@ import org.springframework.context.annotation.Configuration;
 public class CargarBD {
 
     @Bean
-    CommandLineRunner iniciarDB(RepositorioRuta repositorioRuta){
+    CommandLineRunner iniciarDB(RepositorioRuta repositorioRuta,RepositorioViaje repositorioViaje){
+        repositorioViaje.save(new Viaje("Viaje sin costo",Estado.COMPLETADO));
+        repositorioViaje.save(new Viaje("Viaje con costo",Estado.PEDIDO));
+        repositorioViaje.findAll().forEach(viaje -> {
+            log.info("Precargando "+viaje);
+        });
         return args -> {
           log.info("Precargando " + repositorioRuta.save(new Ruta("Miraflores","Sopocachi")));
           log.info("Precargando " + repositorioRuta.save(new Ruta("Los Pinos","San Miguel")));

@@ -9,7 +9,6 @@ import javax.persistence.Table;
 
 @Entity
 @Data
-@Table(name = "VIAJE USUARIO")
 public class Viaje {
     private @Id @GeneratedValue Long id;
     private String descripcion;
