@@ -5,6 +5,7 @@ import org.springframework.hateoas.Resources;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.xml.ws.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -47,21 +48,25 @@ public class RutaControlador {
     }
 
     @PutMapping("/rutas/{id}")
-    Ruta reemplazarRuta(@RequestBody Ruta nuevaruta,@PathVariable Long id){
-        return repositorioRuta.findById(id)
+    ResponseEntity<?> reemplazarRuta(@RequestBody Ruta nuevaruta, @PathVariable Long id) throws URISyntaxException{
+        Ruta rutaActualizada = repositorioRuta.findById(id)
                 .map(ruta -> {
                     ruta.setZonaInicio(nuevaruta.getZonaInicio());
                     ruta.setZonaFinal(nuevaruta.getZonaFinal());
+                    ruta.setDistancia(nuevaruta.getDistancia());
                     return repositorioRuta.save(ruta);
                         })
                 .orElseGet(()->{
                    nuevaruta.setId(id);
                    return repositorioRuta.save(nuevaruta);
                 });
+        Resource<Ruta> resource = ensambladorResourceRuta.toResource(rutaActualizada);
+        return ResponseEntity.created(new URI(resource.getId().expand().getHref())).body(resource);
     }
 
     @DeleteMapping("/rutas/{id}")
-    void borrarRuta(@PathVariable Long id){
+    ResponseEntity<?> borrarRuta(@PathVariable Long id){
         repositorioRuta.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }
