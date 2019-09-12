@@ -1,9 +1,11 @@
 package com.carpooling.ruta;
 
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.Resources;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.core.DummyInvocationUtils.methodOn;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -17,9 +19,18 @@ public class RutaControlador {
     }
 
     @GetMapping("/rutas")
-    List<Ruta> todo(){
-        return repositorioRuta.findAll();
+    Resources<Resource<Ruta>> todo(){
+        List<Resource<Ruta>> rutas = repositorioRuta.findAll().stream()
+                .map( ruta -> new Resource<>(ruta,
+                        linkTo(methodOn(RutaControlador.class).uno(ruta.getId())).withSelfRel(),
+                        linkTo(methodOn(RutaControlador.class).todo()).withRel("rutas")))
+                .collect(Collectors.toList());
+        return  new Resources<>(rutas,
+                linkTo(methodOn(RutaControlador.class).todo()).withSelfRel());
     }
+    /*List<Ruta> todo(){
+        return repositorioRuta.findAll();
+    }*/
 
     @PostMapping("/rutas")
     Ruta nuevaRuta(@RequestBody Ruta nuevo){
@@ -33,9 +44,6 @@ public class RutaControlador {
                 linkTo(methodOn(RutaControlador.class).uno(id)).withSelfRel(),
                 linkTo(methodOn(RutaControlador.class).todo()).withRel("rutas"));
     }
-    /*Ruta una(@PathVariable Long id){
-        return repositorioRuta.findById(id).orElseThrow(()->new ExcepcionRutaNoEncontrada(id));
-    }*/
 
     @PutMapping("/rutas/{id}")
     Ruta reemplazarRuta(@RequestBody Ruta nuevaruta,@PathVariable Long id){
